@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🏥 E-Healthcare Management System (C++ OOP Project)
 
 ## 📘 Description
@@ -63,3 +64,7 @@ It allows hospital administrators to efficiently manage patient records, schedul
 ---
 
 
+=======
+# E-Healthcare-Management-System
+C++ OOPS course project implementing an e-Healthcare Management System 
+>>>>>>> 00bca13debdf23b33a8213bcdbcb69f61b369958
