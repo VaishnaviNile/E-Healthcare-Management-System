@@ -1,0 +1,11 @@
+12346,vaishnavi name,19,female,9359040887,fewer
+321,siddhi,20,female,9673542313,heart attack
+1234,vaishnavi ,19,female,9359040887,fewer
+12345,vaishnavi ,19,female,9359040887,fewer
+2345,siddhi,19,female,9867532413,heart attack
+3456,om,17,male,9359040887,heart pain
+1234,vaishnavi nile,19,female,9359040887,rash
+1254,abc,18,female,78379086367,joint pain
+1245,vishnavi,19,female,9359040887,fewer
+1432,aachal,19,female,1234558959,fever
+54321,purva,10,Female,1453627815,stomach pain

@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>E-Healthcare Management System (Web)</title>
+  <style>
+    :root{
+      --accent:#4e9af1;
+      --accent-2:#2f7ee8;
+      --bg:#f6f8fa;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --success:#16a34a;
+    }
+    *{box-sizing:border-box;font-family:Inter,"Poppins",Arial,sans-serif}
+    body{margin:0;background:var(--bg);color:#111;min-height:100vh;display:flex;flex-direction:column}
+    header{background:var(--accent);color:#fff;padding:18px 20px;text-align:center;font-weight:700;box-shadow:0 3px 10px rgba(0,0,0,0.12)}
+    .wrap{width:100%;max-width:1080px;margin:28px auto;padding:0 16px;display:grid;grid-template-columns:360px 1fr;gap:20px}
+    .card{background:var(--card);border-radius:12px;padding:18px;box-shadow:0 6px 20px rgba(0,0,0,0.06)}
+    .menu h2{color:var(--accent);margin:0 0 12px;font-size:1.1rem}
+    .menu .btn{display:block;width:100%;padding:12px;margin:8px 0;border-radius:8px;border:0;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;transition:all .18s;box-shadow:0 6px 18px rgba(78,154,241,0.16)}
+    .menu .btn:hover{transform:translateY(-3px);background:var(--accent-2)}
+    .output{min-height:380px;padding:18px;white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,"Courier New",monospace}
+    .output h3{margin:0 0 10px;color:var(--accent)}
+    .muted{color:var(--muted);font-size:0.92rem}
+    .form-area{padding:18px;display:flex;flex-direction:column;gap:12px}
+    label{font-size:0.92rem;color:#222;margin-bottom:6px;display:block}
+    input[type=text],input[type=number],select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ef;background:#fbfdff}
+    .row{display:flex;gap:10px}
+    .row .col{flex:1}
+    .small{font-size:0.92rem;color:var(--muted)}
+    .nav{background:#e8f1fb;padding:10px;border-radius:8px;text-align:center;margin-top:10px}
+    .nav a{margin:0 8px;color:var(--accent);text-decoration:none;font-weight:600}
+    footer{margin:28px auto 40px;max-width:1080px;padding:12px;color:var(--muted);text-align:center;background:transparent}
+    .overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);z-index:60}
+    .login-box{width:380px;background:var(--card);padding:20px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.18)}
+    .login-box h2{margin:0 0 10px;color:var(--accent)}
+    .small-note{font-size:0.9rem;color:var(--muted)}
+    .pill{padding:8px 12px;border-radius:8px;border:0;background:var(--accent);color:#fff;cursor:pointer}
+    .linkish{background:transparent;border:0;color:var(--accent);cursor:pointer;font-weight:600}
+    @media(max-width:880px){.wrap{grid-template-columns:1fr;}.menu{order:2}}
+  </style>
+</head>
+<body>
+  <header>
+    <div style="display:flex;justify-content:center;align-items:center;gap:10px;max-width:1080px;margin:0 auto;">
+      <div style="width:50px;height:50px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;color:var(--accent);font-weight:800;font-size:1.2em;">
+        EH
+      </div>
+      <div style="font-size:1.6em;font-weight:700;">E-Healthcare Management System</div>
+    </div>
+  </header>
+
+  <div id="loginOverlay" class="overlay">
+    <div class="login-box">
+      <h2>Admin Login</h2>
+      <div class="small-note">Use <b>admin</b> / <b>1234</b></div>
+      <label>Username</label><input id="loginUser" type="text">
+      <label>Password</label><input id="loginPass" type="password">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+        <div id="loginMsg" class="small-note" style="color:crimson"></div>
+        <button class="pill" onclick="attemptLogin()">Sign In</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <aside class="card menu" style="padding-bottom:18px">
+      <h2>Menu Options</h2>
+      <button class="btn" onclick="openRegister()">1. Register New Patient</button>
+      <button class="btn" onclick="viewPatients()">2. View Patient Records</button>
+      <button class="btn" onclick="openSchedule()">3. Schedule Appointment</button>
+      <button class="btn" onclick="showDoctorDetails()">4. Doctor Details</button>
+      <button class="btn" onclick="openPrescription()">5. Prescriptions & Medicines</button>
+      <button class="btn" onclick="openBilling()">6. Generate Bill</button>
+      <button class="btn" onclick="openSearch()">7. Search Patient</button>
+      <button class="btn" onclick="openUpdate()">8. Update Patient</button>
+      <button class="btn" onclick="openDelete()">9. Delete Patient</button>
+      <button class="btn" onclick="exitSystem()">10. Exit</button>
+      <div class="nav">
+        <a href="#" onclick="scrollToOutput()">Console</a>
+        <a href="#" onclick="clearOutput()">Clear Output</a>
+        <a href="#" onclick="downloadPatients()">Download Data</a>
+      </div>
+    </aside>
+
+    <section>
+      <div class="card form-area" id="formsContainer">
+        <div id="welcomeBox">
+          <h3 style="color:var(--accent)">Welcome</h3>
+          <p class="muted">Click a menu option to perform an action. Outputs appear in the console area below.</p>
+        </div>
+      </div>
+      <div class="card output" id="console">
+        <h3>Output / Console Area</h3>
+        <div id="logArea" style="min-height:220px;color:#111"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+  /* ======= Data structures & helpers ======= */
+  const DOCTORS = [
+    {id:"D201",name:"Dr. Verma",specialty:"General Physician",slots:["10:30 AM","11:30 AM","3:00 PM"]},
+    {id:"D202",name:"Dr. Mehta",specialty:"Cardiologist",slots:["9:00 AM","1:00 PM"]},
+    {id:"D203",name:"Dr. Rao",specialty:"Dermatologist",slots:["2:00 PM","4:00 PM"]},
+    {id:"D204",name:"Dr. Kapoor",specialty:"Neurologist",slots:["11:00 AM","5:00 PM"]},
+    {id:"D205",name:"Dr. Iyer",specialty:"Pulmonologist",slots:["12:00 PM","6:00 PM"]},
+    {id:"D206",name:"Dr. Joshi",specialty:"Endocrinologist",slots:["10:00 AM","3:00 PM"]},
+    {id:"D207",name:"Dr. Singh",specialty:"Orthopedic",slots:["9:30 AM","4:00 PM"]},
+    {id:"D208",name:"Dr. Shah",specialty:"Gastroenterologist",slots:["2:30 PM","6:30 PM"]}
+  ];
+
+  function loadPatients(){const raw=localStorage.getItem("patients");try{return raw?JSON.parse(raw):[];}catch(e){return [];}
+  }
+  function savePatients(arr){localStorage.setItem("patients",JSON.stringify(arr));}
+  function log(msg,success=false){const a=document.getElementById("logArea");const p=document.createElement("div");p.style.marginBottom="8px";p.textContent=msg;p.style.color=success?"green":"#111";a.prepend(p);}
+  function findPatientIndex(id,list){return list.findIndex(p=>p.patientID===id);}
+  function clearOutput(){document.getElementById("logArea").innerHTML="";}
+  function scrollToOutput(){document.getElementById("console").scrollIntoView({behavior:"smooth"});}
+  function escapeHtml(str){return (str||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+  function getSpecialtyForDisease(d){
+    d=(d||"").toLowerCase().trim();
+    if(["cold","fever"].includes(d))return"General Physician";
+    if(["heart pain","hypertension"].includes(d))return"Cardiologist";
+    if(["rash","acne"].includes(d))return"Dermatologist";
+    if(["migraine","seizure"].includes(d))return"Neurologist";
+    if(d==="asthma")return"Pulmonologist";
+    if(["diabetes","thyroid"].includes(d))return"Endocrinologist";
+    if(["fracture","joint pain"].includes(d))return"Orthopedic";
+    if(["stomach pain","ulcer"].includes(d))return"Gastroenterologist";
+    return"";
+  }
+
+  /* ======= LOGIN ======= */
+  function attemptLogin(){
+    const u=document.getElementById("loginUser").value.trim();
+    const p=document.getElementById("loginPass").value.trim();
+    const msg=document.getElementById("loginMsg");
+    if(!u||!p){msg.textContent="Username or password cannot be empty.";return;}
+    if(u==="admin"&&p==="1234"){document.getElementById("loginOverlay").style.display="none";msg.textContent="";log("✅ Login successful! Welcome admin.",true);}
+    else{msg.textContent="Invalid credentials.";log("❌ Invalid credentials attempt.");}
+  }
+
+  /* ======= UI helper ======= */
+  function setFormContent(html){
+    document.getElementById("formsContainer").innerHTML=html;
+    setTimeout(()=>document.getElementById("formsContainer").scrollIntoView({behavior:"smooth"}),120);
+  }
+
+  /* --------- Option 1: Register New Patient --------- */
+  function openRegister(){
+    setFormContent(`
+    <div>
+      <h3 style="color:var(--accent)">Register New Patient</h3>
+      <label>Patient ID</label><input id="reg_id" type="text" placeholder="e.g. P1001"/>
+      <label>Name</label><input id="reg_name" type="text"/>
+      <div class="row"><div class="col"><label>Age</label><input id="reg_age" type="number" min="0"/></div>
+      <div class="col"><label>Gender</label><input id="reg_gender" type="text" placeholder="Male / Female / Other"/></div></div>
+      <label>Contact</label><input id="reg_contact" type="text" maxlength="10"/>
+      <label>Disease</label><input id="reg_disease" type="text"/>
+      <div style="margin-top:10px;display:flex;justify-content:flex-end;gap:10px">
+        <button class="linkish" onclick="setFormContent(document.getElementById('welcomeBox').outerHTML)">Cancel</button>
+        <button class="pill" onclick="registerPatient()">Register</button>
+      </div>
+    </div>`);
+  }
+
+  function registerPatient(){
+    const id=document.getElementById("reg_id").value.trim();
+    const name=document.getElementById("reg_name").value.trim();
+    const age=parseInt(document.getElementById("reg_age").value||"0");
+    const gender=document.getElementById("reg_gender").value.trim();
+    const contact=document.getElementById("reg_contact").value.trim();
+    const disease=document.getElementById("reg_disease").value.trim();
+    let patients=loadPatients();
+
+    if(!id){alert("⚠️ Patient ID cannot be empty.");return;}
+    if(findPatientIndex(id,patients)!==-1){alert("⚠️ Patient ID already exists.");return;}
+    if(!name){alert("⚠️ Name cannot be empty.");return;}
+    if(age<=0||age>120){alert("⚠️ Invalid age. Must be between 1–120.");return;}
+    const validGenders=["male","female","other"];
+    if(!validGenders.includes(gender.toLowerCase())){alert("⚠️ Gender must be Male, Female, or Other.");return;}
+    if(!/^[0-9]{10}$/.test(contact)){alert("⚠️ Contact number must be 10 digits.");return;}
+    if(!disease){alert("⚠️ Disease cannot be empty.");return;}
+
+    patients.push({patientID:id,name,age,gender,contact,disease});
+    savePatients(patients);
+    log(`✅ Patient registered successfully! ID: ${id}`,true);
+    setFormContent(document.getElementById('welcomeBox').outerHTML);
+  }
+
+  /* --------- Option 2: View Patient Records --------- */
+  function viewPatients(){
+    const patients=loadPatients();
+    let html=`<h3 style="color:var(--accent)">View Patient Records</h3>`;
+    if(patients.length===0){ html+=`<div class="small muted">No patients found.</div>`; setFormContent(html); log("No patient records to display."); return; }
+    html+=`<div class="small muted">Showing ${patients.length} records (latest first).</div><div style="margin-top:12px">`;
+    for(let i=patients.length-1;i>=0;i--){
+      const p=patients[i];
+      html+=`<div style="padding:10px;border-radius:8px;border:1px solid #f0f4fb;margin-bottom:10px">
+        <strong>${escapeHtml(p.patientID)}</strong> — ${escapeHtml(p.name)} • Age: ${p.age} • ${escapeHtml(p.gender)}<br>
+        Contact: ${escapeHtml(p.contact)} • Disease: ${escapeHtml(p.disease)}
+      </div>`;
+    }
+    html+=`</div>`;
+    setFormContent(html);
+    log(`Displayed ${patients.length} patient records.`);
+  }
+
+  /* --------- Option 3: Schedule Appointment --------- */
+  function openSchedule(){
+    setFormContent(`
+      <div>
+        <h3 style="color:var(--accent)">Schedule Appointment</h3>
+        <div class="small">Enter patient ID to schedule based on disease specialty.</div>
+        <label>Patient ID</label><input id="sch_id" type="text"/>
+        <div style="display:flex;justify-content:flex-end;margin-top:10px">
+          <button class="linkish" onclick="setFormContent(document.getElementById('welcomeBox').outerHTML)">Cancel</button>
+          <button class="pill" onclick="scheduleAppointment()">Schedule</button>
+        </div>
+      </div>`);
+  }
+
+  function scheduleAppointment(){
+    const id=document.getElementById("sch_id").value.trim();
+    if(!id){alert("Enter a patient ID.");return;}
+    const patients=loadPatients();
+    const idx=findPatientIndex(id,patients);
+    if(idx===-1){log("Patient not found.");return;}
+    const disease=(patients[idx].disease||"").toLowerCase();
+    const specialty=getSpecialtyForDisease(disease);
+    if(!specialty){log(`⚠️ Disease "${patients[idx].disease}" not recognized in the system. Please recheck spelling or consult a General Physician.`,false); return;}
+    const doctor=DOCTORS.find(d=>d.specialty===specialty);
+    if(!doctor){log(`No doctor available for ${disease}`,false);return;}
+
+    const choices=[30,60,90];
+    const delay=choices[Math.floor(Math.random()*choices.length)];
+    const now=new Date();
+    const future=new Date(now.getTime()+delay*60000);
+    const dateStr = now.getDate().toString().padStart(2,'0') + "-" + now.toLocaleString('en', {month:'short'}) + "-" + now.getFullYear();
+    let hour=future.getHours();
+    const minute=future.getMinutes().toString().padStart(2,'0');
+    const ampm = hour>=12 ? "PM":"AM";
+    hour = hour%12===0?12:hour%12;
+    const timeStr = hour.toString().padStart(2,'0')+":"+minute+" "+ampm;
+    log(`📅 Appointment scheduled with ${doctor.name} (${doctor.specialty}) on ${dateStr} at ${timeStr}`,true);
+  }
+
+  /* --------- Option 4: Doctor Details --------- */
+  function showDoctorDetails(){
+    let html=`<h3 style="color:var(--accent)">Doctor Details</h3><div class="small muted">Available doctors & slots</div><div style="margin-top:12px">`;
+    DOCTORS.forEach(d=>{
+      html+=`<div style="padding:10px;border-radius:8px;border:1px solid #f0f4fb;margin-bottom:8px">
+        <strong>${escapeHtml(d.name)}</strong> • ${escapeHtml(d.specialty)}<br>
+        Slots: ${d.slots.join(", ")}
+      </div>`;
+    });
+    html+=`</div>`;
+    setFormContent(html);
+    log("Displayed doctor details.");
+  }
+
+  /* --------- Option 5: Prescriptions & Medicines --------- */
+  function openPrescription(){
+    setFormContent(`
+      <div>
+        <h3 style="color:var(--accent)">Prescriptions & Medicines</h3>
+        <div class="small">Enter patient ID to view prescription suggestion.</div>
+        <label>Patient ID</label><input id="pres_id" type="text"/>
+        <div style="display:flex;justify-content:flex-end;margin-top:10px">
+          <button class="linkish" onclick="setFormContent(document.getElementById('welcomeBox').outerHTML)">Cancel</button>
+          <button class="pill" onclick="showPrescription()">Show Prescription</button>
+        </div>
+      </div>`);
+  }
+
+  function showPrescription(){
+    const id=document.getElementById("pres_id").value.trim();
+    if(!id){alert("Enter patient ID.");return;}
+    const patients=loadPatients();
+    const idx=findPatientIndex(id,patients);
+    if(idx===-1){log("Patient not found.");return;}
+    const p=patients[idx];
+    const disease=(p.disease||"").toLowerCase();
+    const specialty=getSpecialtyForDisease(disease);
+    if(!specialty){log(`⚠️ Disease "${p.disease}" not found in records. Please consult a General Physician.`,false);return;}
+    const doc=DOCTORS.find(d=>d.specialty===specialty)||DOCTORS[0];
+    log(`\n===== Prescription Details =====\nPatient ID : ${p.patientID}\nDoctor     : ${doc.name}\nDisease    : ${p.disease}\nAge        : ${p.age} years\n\nPrescription:`,true);
+
+    const age = p.age;
+    const isChild = age < 12;
+    const isElderly = age >= 60;
+    const lines = [];
+
+    if(disease==="cold"||disease==="fever"){
+      if(isChild){ lines.push("1. Paracetamol Syrup (250mg) - 5ml twice a day for 3 days"); lines.push("2. Cough Syrup - 5ml twice daily"); }
+      else if(isElderly){ lines.push("1. Paracetamol 500mg - Once daily"); lines.push("2. Hydration and rest recommended"); }
+      else { lines.push("1. Paracetamol 500mg - Twice a day for 3 days"); lines.push("2. Cough Syrup - 10ml twice daily"); }
+    } else if(disease==="heart pain"||disease==="hypertension"){
+      lines.push("1. Aspirin 75mg - Once daily"); lines.push("2. Atorvastatin 10mg - Once at night"); lines.push("3. Regular BP monitoring advised");
+    } else if(disease==="rash"||disease==="acne"){
+      lines.push("1. Topical Cream - Apply twice daily"); lines.push("2. Cetirizine 10mg - Once daily");
+    } else if(disease==="migraine"||disease==="seizure"){
+      lines.push("1. Sumatriptan 50mg - When migraine occurs"); lines.push("2. Magnesium supplement - Once daily");
+    } else if(disease==="asthma"){
+      lines.push("1. Inhaler (Salbutamol) - As prescribed"); lines.push("2. Montelukast 10mg - Once daily");
+    } else if(disease==="diabetes"){
+      lines.push("1. Metformin 500mg - Twice daily after meals"); lines.push("2. Regular sugar monitoring advised");
+    } else if(disease==="thyroid"){
+      lines.push("1. Thyroxine 50mcg - Once daily (empty stomach)"); lines.push("2. Avoid oily foods");
+    } else if(disease==="fracture"||disease==="joint pain"){
+      lines.push("1. Calcium supplements - Twice daily"); lines.push("2. Physiotherapy and rest advised");
+    } else if(disease==="stomach pain"||disease==="ulcer"){
+      lines.push("1. Pantoprazole 40mg - Before breakfast"); lines.push("2. Avoid spicy food and caffeine");
+    } else {
+      lines.push("1. Multivitamin - Once daily"); lines.push("2. Drink plenty of fluids and rest");
+    }
+
+    lines.forEach(L=>log(L));
+  }
+
+  /* --------- Option 6: Billing --------- */
+  function openBilling(){
+    setFormContent(`
+      <div>
+        <h3 style="color:var(--accent)">Generate Bill</h3>
+        <div class="small">Enter Patient ID to generate bill.</div>
+        <label>Patient ID</label><input id="bill_id" type="text"/>
+        <div style="display:flex;justify-content:flex-end;margin-top:10px">
+          <button class="linkish" onclick="setFormContent(document.getElementById('welcomeBox').outerHTML)">Cancel</button>
+          <button class="pill" onclick="generateBill()">Generate</button>
+        </div>
+      </div>`);
+  }
+
+  function generateBill(){
+    const id=document.getElementById("bill_id").value.trim();
+    if(!id){alert("Enter patient ID.");return;}
+    const patients=loadPatients();
+    const idx=findPatientIndex(id,patients);
+    if(idx===-1){log("Patient not found.");return;}
+    const p=patients[idx];
+    const disease=(p.disease||"").toLowerCase();
+    let doctorFee=0, medicineCost=0;
+    if(disease==="cold"||disease==="fever"){doctorFee=300;medicineCost=150;}
+    else if(disease==="heart pain"||disease==="hypertension"){doctorFee=800;medicineCost=400;}
+    else if(disease==="rash"||disease==="acne"){doctorFee=400;medicineCost=200;}
+    else if(disease==="migraine"||disease==="seizure"){doctorFee=600;medicineCost=300;}
+    else if(disease==="asthma"){doctorFee=700;medicineCost=350;}
+    else if(disease==="diabetes"){doctorFee=900;medicineCost=500;}
+    else if(disease==="thyroid"){doctorFee=650;medicineCost=300;}
+    else if(disease==="fracture"||disease==="joint pain"){doctorFee=1000;medicineCost=700;}
+    else if(disease==="stomach pain"||disease==="ulcer"){doctorFee=500;medicineCost=250;}
+    else{doctorFee=250;medicineCost=100;}
+    const total=doctorFee+medicineCost;
+    log(`\n===== Bill Receipt =====\nPatient ID   : ${p.patientID}\nPatient Name : ${p.name}\nDisease      : ${p.disease}\nDoctor Fee   : ₹${doctorFee}\nMedicine Cost: ₹${medicineCost}\n--------------------------\nTotal Amount : ₹${total}\n==========================`,true);
+  }
+
+  /* --------- Option 7: Search Patient --------- */
+  function openSearch(){
+    setFormContent(`
+      <div>
+        <h3 style="color:var(--accent)">Search Patient</h3>
+        <div class="small">Enter Patient ID to search.</div>
+        <label>Patient ID</label><input id="search_id" type="text"/>
+        <div style="display:flex;justify-content:flex-end;margin-top:10px">
+          <button class="linkish" onclick="setFormContent(document.getElementById('welcomeBox').outerHTML)">Cancel</button>
+          <button class="pill" onclick="searchPatient()">Search</button>
+        </div>
+      </div>`);
+  }
+
+  function searchPatient(){
+    const id=document.getElementById("search_id").value.trim();
+    if(!id){alert("Enter patient ID.");return;}
+    const patients=loadPatients();
+    const idx=findPatientIndex(id,patients);
+    if(idx===-1){log("Patient not found.");return;}
+    const p=patients[idx];
+    log(`Patient ID: ${p.patientID}\nName      : ${p.name}\nAge       : ${p.age}\nGender    : ${p.gender}\nContact   : ${p.contact}\nDisease   : ${p.disease}`);
+  }
+
+  /* --------- Option 8: Update Patient --------- */
+  function openUpdate(){
+    setFormContent(`
+      <div>
+        <h3 style="color:var(--accent)">Update Patient</h3>
+        <div class="small">Enter patient ID, load details, then update.</div>
+        <label>Patient ID</label><input id="upd_id_load" type="text"/>
+        <div style="display:flex;justify-content:flex-end;margin-top:8px">
+          <button class="pill" onclick="loadForUpdate()">Load</button>
+        </div>
+        <div id="updateFormArea" style="margin-top:12px"></div>
+      </div>`);
+  }
+
+  function loadForUpdate(){
+    const id=document.getElementById("upd_id_load").value.trim();
+    if(!id){alert("Enter patient ID.");return;}
+    const patients=loadPatients();
+    const idx=findPatientIndex(id,patients);
+    if(idx===-1){log("Patient not found.");return;}
+    const p=patients[idx];
+    document.getElementById("updateFormArea").innerHTML=`
+      <label>Name</label><input id="upd_name" value="${escapeHtml(p.name)}"/>
+      <div class="row"><div class="col"><label>Age</label><input id="upd_age" type="number" value="${p.age}"/></div>
+      <div class="col"><label>Gender</label><input id="upd_gender" value="${escapeHtml(p.gender)}"/></div></div>
+      <label>Contact</label><input id="upd_contact" value="${escapeHtml(p.contact)}"/>
+      <label>Disease</label><input id="upd_disease" value="${escapeHtml(p.disease)}"/>
+      <div style="display:flex;justify-content:flex-end;margin-top:10px">
+        <button class="pill" onclick="updatePatient('${p.patientID}')">Update</button>
+      </div>`;
+  }
+
+  function updatePatient(id){
+    const name=document.getElementById("upd_name").value.trim();
+    const age=parseInt(document.getElementById("upd_age").value||"0");
+    const gender=document.getElementById("upd_gender").value.trim();
+    const contact=document.getElementById("upd_contact").value.trim();
+    const disease=document.getElementById("upd_disease").value.trim();
+    const patients=loadPatients();
+    const idx=findPatientIndex(id,patients);
+    if(idx===-1){log("Patient not found.");return;}
+    if(!name){alert("⚠️ Name cannot be empty.");return;}
+    if(age<=0||age>120){alert("⚠️ Invalid age. Must be between 1–120.");return;}
+    const validGenders=["male","female","other"];
+    if(!validGenders.includes(gender.toLowerCase())){alert("⚠️ Gender must be Male, Female, or Other.");return;}
+    if(!/^[0-9]{10}$/.test(contact)){alert("⚠️ Contact number must be 10 digits.");return;}
+    if(!disease){alert("⚠️ Disease cannot be empty.");return;}
+    patients[idx]={patientID:id,name,age,gender,contact,disease};
+    savePatients(patients);
+    log("✅ Patient details updated successfully!",true);
+    setFormContent(document.getElementById('welcomeBox').outerHTML);
+  }
+
+  /* --------- Option 9: Delete Patient --------- */
+  function openDelete(){
+    setFormContent(`
+      <div>
+        <h3 style="color:var(--accent)">Delete Patient</h3>
+        <label>Patient ID</label><input id="del_id" type="text"/>
+        <div style="display:flex;justify-content:flex-end;margin-top:10px">
+          <button class="pill" onclick="deletePatient()">Delete</button>
+        </div>
+      </div>`);
+  }
+
+  function deletePatient(){
+    const id=document.getElementById("del_id").value.trim();
+    if(!id){alert("Enter patient ID.");return;}
+    let patients=loadPatients();
+    const idx=findPatientIndex(id,patients);
+    if(idx===-1){log("Patient not found.");return;}
+    if(confirm(`Are you sure you want to delete patient ${id}?`)){
+      patients.splice(idx,1);
+      savePatients(patients);
+      log("Deleted successfully.",true);
+      setFormContent(document.getElementById('welcomeBox').outerHTML);
+    } else {
+      log("Deletion cancelled.");
+    }
+  }
+
+  /* --------- Option 10: Exit --------- */
+  function exitSystem(){
+    log("Exiting System... (In web demo this will lock UI back to login).");
+    document.getElementById("loginOverlay").style.display="flex";
+    document.getElementById("loginUser").value="";
+    document.getElementById("loginPass").value="";
+    setFormContent(document.getElementById('welcomeBox').outerHTML);
+  }
+
+  /* ======= Utilities ======= */
+  function downloadPatients(){
+    const arr=loadPatients();
+    const blob=new Blob([JSON.stringify(arr,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url; a.download="patients.json"; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  /* ======= Init sample data ======= */
+  (function init(){
+    const p=loadPatients();
+    if(p.length===0){
+      const sample=[{patientID:"P1001",name:"Rahul Sharma",age:28,gender:"Male",contact:"9876543210",disease:"fever"}];
+      savePatients(sample);
+      log("Sample patient created: P1001 — Rahul Sharma (fever)");
+    } else {
+      log(`Loaded ${p.length} patient(s) from local storage.`);
+    }
+  })();
+
+  </script>
+</body>
+</html>
